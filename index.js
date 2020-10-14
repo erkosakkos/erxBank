@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const usersRoute = require('./routes/users')
+const sessionsRoute = require('./routes/sessions')
 const mongoose = require('mongoose')
 const swaggerUi = require('swagger-ui-express')
 const yaml = require('yamljs')
@@ -15,13 +16,14 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
 
 //Attache routes
 app.use('/users', usersRoute)
+app.use('/sessions', sessionsRoute)
 
 mongoose.connect(process.env.DB_CONNECT, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true
 }, ()=> {
-    console.log('Nani');
+    console.log('Nani???');
 })
 
 app.listen(process.env.PORT, ()=> {

@@ -3,23 +3,23 @@ const User = require('../models/User')
 const Account = require('../models/Account')
 const bcrypt = require('bcrypt')
 
-router.post('/', async (reg, res, next) => {
+router.post('/', async (req, res, next) => {
 
         //Make sure the password is supplied
-        if(typeof reg.body.password === "undefined" || reg.body.password.length < 8) {
+        if(typeof req.body.password === "undefined" || req.body.password.length < 8) {
             res.status(400).send({error: "Invalid password"})
 
             return
         }
 
         //Hash the password
-        reg.body.password = await bcrypt.hash(reg.body.password, 10);
+        req.body.password = await bcrypt.hash(req.body.password, 10);
 
 
             try {
 
                 //Create new user to DB
-                const user = await new User(reg.body).save()
+                const user = await new User(req.body).save()
 
 
                 //Create new account for the user
