@@ -95,6 +95,35 @@ paths:
                     error: Invalid token
           description: Unauthorized
       summary: Logs the user out
+  /users/current:
+    summary: Returns currently logged in user's data
+    get:
+      tags:
+        - users
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getUsersCurrentResponse'
+          description: Successful request
+          '401':
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/errorResponse'
+                examples:
+                  Missin Authorization header:
+                    value:
+                      error: Missing Authorization header
+                  Invalid token:
+                    value:
+                      error: Invalid token
+            description: Unauthorized
+      security:
+        -
+          Token: []
+      summary: Returns user's data
 components:
   schemas:
     userObject:
@@ -106,7 +135,7 @@ components:
           description: Array of user's bank accounts
           type: array
           items:
-            $ref: '#/components/schemas/accountObject'
+            $ref: '#/components/schemas/account'
         password:
           type: string
         name:
@@ -151,29 +180,6 @@ components:
         name: Sasuke Uchiha
         username: sasuke
         password: narutouzumaki
-    accountObject:
-      title: accountObject
-      description: ''
-      type: object
-      properties:
-        name:
-          description: Account's name
-          type: string
-        balance:
-          format: int32
-          description: The funds the account holds
-          type: integer
-        currency:
-          description: The currency of the funds
-          type: string
-        number:
-          description: Account's number
-          type: string
-      example:
-        name: Main
-        balance: 100000
-        currency: EUR
-        number: erx896925e436c5f72a807f31e57439eb2d
     errorResponse:
       title: errorResponse
       description: ''
@@ -209,6 +215,50 @@ components:
           type: string
       example:
         token: 5f85c4c591c8bdc811c64023
+    getUsersCurrentResponse:
+      title: Root Type for getUsersCurrentResponse
+      description: ''
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        username:
+          type: string
+        accounts:
+          description: Array of user's accounts
+          type: array
+          items:
+            $ref: '#/components/schemas/account'
+      example:
+        id: 5f856e7c2f9e4eb8e3dba409
+        name: Erx
+        username: erx
+        accounts:
+          -
+            name: Main
+            balance: 100000
+            currency: EUR
+            number: erxe3e2901037bde2f09f04563eff8a51b4
+    account:
+      title: Root Type for account
+      description: ''
+      type: object
+      properties:
+        name:
+          type: string
+        balance:
+          type: integer
+        currency:
+          type: string
+        number:
+          type: string
+      example:
+        name: Main
+        balance: 100000
+        currency: EUR
+        number: erxe3e2901037bde2f09f04563eff8a51b4
   securitySchemes:
     Token:
       scheme: bearer

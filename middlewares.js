@@ -21,7 +21,7 @@ exports.verifyToken = async (req, res, next) => {
         return res.status(401).json({error: 'Invalid token'});
     }
     const session = await sessionModel.findOne({_id: authorizationHeader[1]});
-    console.log(session)
+
     if (!session) return res.status(401).json({error: 'Invalid token'});
 
     //Write user's id into req
