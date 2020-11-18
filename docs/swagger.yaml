@@ -107,23 +107,68 @@ paths:
               schema:
                 $ref: '#/components/schemas/getUsersCurrentResponse'
           description: Successful request
-          '401':
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/errorResponse'
-                examples:
-                  Missin Authorization header:
-                    value:
-                      error: Missing Authorization header
-                  Invalid token:
-                    value:
-                      error: Invalid token
-            description: Unauthorized
       security:
         -
           Token: []
       summary: Returns user's data
+  /transactions:
+    post:
+      tags:
+        - transactions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/postTransactionsRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json: {}
+          description: Transaction has been successfully queued for processing
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              examples:
+                invalidAmount:
+                  value:
+                    error: Invalid amount
+                invalidAccountTo:
+                  value:
+                    error: Invalid accountTo
+          description: Invalid amount
+        '402':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              examples:
+                insufficientFunds:
+                  value:
+                    error: Insufficient Funds
+          description: Insufficient funds
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              examples:
+                forbidden:
+                  value:
+                    error: Forbidden
+          description: accountFrom doesn't belong to the user
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              examples:
+                accountNotFound:
+                  value:
+                    error: Account not found
+          description: Account not found
 components:
   schemas:
     userObject:
@@ -181,7 +226,7 @@ components:
         username: sasuke
         password: narutouzumaki
     errorResponse:
-      title: errorResponse
+      title: errorObject
       description: ''
       type: object
       properties:
@@ -216,7 +261,7 @@ components:
       example:
         token: 5f85c4c591c8bdc811c64023
     getUsersCurrentResponse:
-      title: Root Type for getUsersCurrentResponse
+      title: /GET users/current response
       description: ''
       type: object
       properties:
@@ -242,7 +287,7 @@ components:
             currency: EUR
             number: erxe3e2901037bde2f09f04563eff8a51b4
     account:
-      title: Root Type for account
+      title: accountObject
       description: ''
       type: object
       properties:
@@ -259,6 +304,29 @@ components:
         balance: 100000
         currency: EUR
         number: erxe3e2901037bde2f09f04563eff8a51b4
+    postTransactionsRequest:
+      title: /POST /transactions request
+      description: ''
+      type: object
+      properties:
+        accountFrom:
+          description: Sender's bank account
+          type: string
+        accountTo:
+          description: Receiver's bank account
+          type: string
+        amount:
+          format: int32
+          description: Sum
+          type: integer
+        explanation:
+          description: Purpose of the transaction
+          type: string
+      example:
+        accountFrom: erx0a50fbcf75b49c21400af2ebe1f76287
+        accountTo: BY000000001
+        amount: 15
+        explanation: Don’t go spend it all at once
   securitySchemes:
     Token:
       scheme: bearer
