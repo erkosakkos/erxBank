@@ -20,6 +20,8 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
 app.use('/users', usersRoute)
 app.use('/sessions', sessionsRoute)
 app.use('/transactions', transactionsRoute)
+app.use('/jwks', function(req, res) {
+    res.redirect('https://dev.erxit.eu/transactions/jwks')})
 
 mongoose.connect(process.env.DB_CONNECT, {
     useNewUrlParser: true,

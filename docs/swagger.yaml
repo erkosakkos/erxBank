@@ -31,7 +31,7 @@ paths:
                     error: Invalid password
                 Parameter is required:
                   value:
-                    error: 'User validation failed: (param): Path (param) is required.'
+                    error: 'User validation failed: {param}: Path `{param}` is required.'
           description: Bad request
         '409':
           content:
@@ -70,9 +70,6 @@ paths:
                 Invalid username/password:
                   value:
                     error: Invalid username/password
-                Invalid token:
-                  value:
-                    error: Invalid token
           description: Invalid username/password
       summary: Logs the user in
     delete:
@@ -87,13 +84,16 @@ paths:
               schema:
                 $ref: '#/components/schemas/errorResponse'
               examples:
-                Missin Authorization header:
+                Missing Authorization header:
                   value:
                     error: Missing Authorization header
                 Invalid token:
                   value:
                     error: Invalid token
           description: Unauthorized
+      security:
+        -
+          Token: []
       summary: Logs the user out
   /users/current:
     summary: Returns currently logged in user's data
@@ -106,21 +106,56 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/getUsersCurrentResponse'
-          description: Successful request
+          description: Succesful request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              examples:
+                Missing Authorization header:
+                  value:
+                    error: Missing Authorization header
+                Invalid token:
+                  value:
+                    error: Invalid token
+          description: Unauthorized
       security:
         -
           Token: []
-      summary: Returns user's data
+      summary: Returns currently logged in user's data
   /transactions:
-    post:
+    get:
       tags:
         - transactions
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getTransactionsResponse'
+          description: Returns an array of user's transactions
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              examples:
+                Invalid token:
+                  value:
+                    error: Invalid token
+      security:
+        -
+          Token: []
+    post:
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/postTransactionsRequest'
         required: true
+      tags:
+        - transactions
       responses:
         '201':
           content:
@@ -147,7 +182,7 @@ paths:
               examples:
                 insufficientFunds:
                   value:
-                    error: Insufficient Funds
+                    error: Insufficient funds
           description: Insufficient funds
         '403':
           content:
@@ -158,7 +193,7 @@ paths:
                 forbidden:
                   value:
                     error: Forbidden
-          description: accountFrom doesn't belong to the user
+          description: The accountFrom doesn't belong to the user
         '404':
           content:
             application/json:
@@ -169,8 +204,110 @@ paths:
                   value:
                     error: Account not found
           description: Account not found
+      security:
+        -
+          Token: []
+      summary: Accepts new transaction
+  /transactions/b2b:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/postTransactionsB2bRequest'
+        required: true
+      tags:
+        - transactions
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/postTransactionsB2bResponse'
+              examples:
+                postTransactionsB2bResponseExample:
+                  value:
+                    receiverName: Jack Daniels
+          description: Transfer accepted
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              examples:
+                Parsing JWT payload failed:
+                  value:
+                    error: 'Parsing JWT payload failed: reason here'
+                The account sending the funds does not belong to a bank registered in Central Bank:
+                  value:
+                    error: >-
+                      The account sending the funds does not belong to a bank registered
+                      in Central Bank
+                The jwksUrl of the bank is invalid:
+                  value:
+                    error: >-
+                      Cannot verify your signature: The jwksUrl of your bank
+                      (${bankFrom.jwksUrl}) is invalid: reason here
+                Invalid signature:
+                  value:
+                    error: Invalid signature
+          description: Bad request
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              examples:
+                Account not found:
+                  value:
+                    error: Account not found
+          description: Account not found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              examples:
+                'Cannot verify your signature: The jwksUrl of your bank is missing':
+                  value:
+                    error: 'Cannot verify your signature: The jwksUrl of your bank is missing'
+          description: 'Cannot verify your signature: The jwksUrl of your bank is missing'
+        '502':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              examples:
+                Central Bank error:
+                  value:
+                    error: 'Central Bank error: reason here'
+          description: Central Bank error
+      summary: Accepts new transaction from anoher bank
 components:
   schemas:
+    postUsersRequest:
+      title: POST /users request
+      description: ''
+      required:
+        - name
+        - username
+        - password
+      type: object
+      properties:
+        name:
+          description: User's full name
+          type: string
+        username:
+          description: Desired username
+          type: string
+        password:
+          format: password
+          description: Desired password
+          type: string
+      example:
+        name: Sasuke Uchiha
+        username: sasuke
+        password: narutouzumaki
     userObject:
       title: userObject
       description: ''
@@ -202,29 +339,6 @@ components:
             currency: EUR
             number: erx6877e78200596839a6b30c655efaaf29
             id: 5f7ed36f7901dd2c65c57a8f
-    postUsersRequest:
-      title: POST /users request
-      description: ''
-      required:
-        - name
-        - username
-        - password
-      type: object
-      properties:
-        name:
-          description: User's full name
-          type: string
-        username:
-          description: Desired username
-          type: string
-        password:
-          format: password
-          description: Desired password
-          type: string
-      example:
-        name: Sasuke Uchiha
-        username: sasuke
-        password: narutouzumaki
     errorResponse:
       title: errorObject
       description: ''
@@ -255,13 +369,13 @@ components:
       properties:
         token:
           description: >-
-            A session token which needs to be sent back to the server in Authorization header with
+            A session token which needs to be sent back to server in Authorization header with
             every request (Authorization: Bearer <token>)
           type: string
       example:
-        token: 5f85c4c591c8bdc811c64023
+        token: 5fb5742f83eea52a37ce42c9
     getUsersCurrentResponse:
-      title: /GET users/current response
+      title: GET /users/current response
       description: ''
       type: object
       properties:
@@ -285,7 +399,7 @@ components:
             name: Main
             balance: 100000
             currency: EUR
-            number: erxe3e2901037bde2f09f04563eff8a51b4
+            number: e14e71b75c5ab04072ab31521c2ad86f83e
     account:
       title: accountObject
       description: ''
@@ -303,7 +417,7 @@ components:
         name: Main
         balance: 100000
         currency: EUR
-        number: erxe3e2901037bde2f09f04563eff8a51b4
+        number: e14e71b75c5ab04072ab31521c2ad86f83e
     postTransactionsRequest:
       title: /POST /transactions request
       description: ''
@@ -323,15 +437,95 @@ components:
           description: Purpose of the transaction
           type: string
       example:
-        accountFrom: erx0a50fbcf75b49c21400af2ebe1f76287
-        accountTo: BY000000001
-        amount: 15
-        explanation: Don’t go spend it all at once
+        accountFrom: e14e71b75c5ab04072ab31521c2ad86f83e
+        accountTo: 9076ab24797dff1d089fab706d8b2e053f0
+        amount: 12
+        explanation: Money for honey
+    postTransactionsB2bResponse:
+      description: ''
+      required:
+        - receiverName
+      type: object
+      properties:
+        receiverName:
+          description: The name of the person to whom the accountTo account belongs to
+          type: string
+      example:
+        receiverName: Jack Daniels
+    postTransactionsB2bRequest:
+      title: postTransactionsB2b
+      description: ''
+      type: object
+      properties:
+        jwt:
+          description: >-
+            A JSON Web Token, containing the following payload:
+
+            {
+                "accountFrom": "abc123",
+                "accountTo": "xyz456",
+                "currency": "USD",
+                "amount": 2,
+                "explanation": "My two cents",
+                "senderName": "Donald Trump"
+            }, signed by the sending bank with its private key of which the public counterpart is
+            available at the bank's jwksUrl
+          type: string
+      example:
+        jwt: >-
+          base64EncodedHeaderContainingAlgorithmUsedToSignTheToken.base64EncodedPayloadPart.base64EncodedSignatureCalculatedWithPrivateKeyFromHeaderAndPayload
+    getTransactionsResponse:
+      description: ''
+      type: array
+      items:
+        $ref: '#/components/schemas/transactionObjectWithoutUserId'
+    transactionObjectWithoutUserId:
+      title: transactionObjectWithoutUserId
+      description: ''
+      type: object
+      properties:
+        id:
+          description: Transaction ID
+          type: string
+        status:
+          description: '''pending'', ''inProgress'' or ''failed'''
+          type: string
+        amount:
+          description: Transfer sum
+          type: string
+        currency:
+          description: currency of amount
+          type: string
+        accountFrom:
+          description: Sender's account
+          type: string
+        accountTo:
+          description: Receiver's account
+          type: string
+        explanation:
+          description: Purpose of transaction
+          type: string
+        senderName:
+          type: string
+        createdAt:
+          format: date-time
+          description: Time when transaction was made
+          type: string
+        statusDetail:
+          type: string
+      example:
+        "id": 5fb57886046c683e2ed7d851
+        "status": completed
+        "amount": "12"
+        "currency": EUR
+        "accountFrom": e14e71b75c5ab04072ab31521c2ad86f83e
+        "accountTo": 9076ab24797dff1d089fab706d8b2e053f0
+        "explanation": Money for honey
+        "senderName": Sasuke Uchiha
+        "createdAt": '2020-11-18T21:32:45.697+00:00'
+        "statusDetail": ""
   securitySchemes:
     Token:
       scheme: bearer
       type: http
       description: A Bearer scheme
-security:
-  -
-    Token: []
