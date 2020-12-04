@@ -74,7 +74,7 @@ router.post('/', verifyToken, async (req, res, next) => {
 })
 
 router.post('/b2b', async (req, res, next) => {
-    console.log('/b2b: Started processing incoming transaction request');
+    console.log('/b2b: Started processing incoming transaction request')
 
     let transaction
 

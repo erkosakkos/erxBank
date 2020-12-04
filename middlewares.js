@@ -218,7 +218,8 @@ exports.processTransactions = async () => {
         if (!oServerResponse.data.receiverName) {
             console.log('loop: Server response did not have receiverName. It was: ' + oServerResponse.data);
             transaction.status = 'failed'
-            transaction.statusDetail = typeof oServerResponse.data.error !== 'undefined' ? oServerResponse.data.error : JSON.stringify(oServerResponse.data)
+            transaction.statusDetail = typeof oServerResponse.data.error !== 'undefined' ?
+                oServerResponse.data.error : JSON.stringify(oServerResponse.data)
             transaction.save()
             return
         }
@@ -242,7 +243,7 @@ exports.processTransactions = async () => {
     }, Error())
     // Call function again after 1 sec
     setTimeout(exports.processTransactions, 1000)
-};
+}
 
 /**
  * Refreshes the list of known banks from Central Bank
