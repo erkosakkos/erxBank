@@ -144,7 +144,6 @@ paths:
                 Invalid token:
                   value:
                     error: Invalid token
-          description: Invalid token
       security:
         -
           Token: []
@@ -228,7 +227,7 @@ paths:
               examples:
                 postTransactionsB2bResponseExample:
                   value:
-                    receiverName: Johnny Walker
+                    receiverName: Jack Daniels
           description: Transfer accepted
         '400':
           content:
@@ -515,16 +514,16 @@ components:
         statusDetail:
           type: string
       example:
-        id: 5fb57886046c683e2ed7d851
-        status: completed
-        amount: '12'
-        currency: EUR
-        accountFrom: e14e71b75c5ab04072ab31521c2ad86f83e
-        accountTo: 9076ab24797dff1d089fab706d8b2e053f0
-        explanation: Money for honey
-        senderName: Sasuke Uchiha
-        createdAt: '2020-11-18T21:32:45.697+00:00'
-        statusDetail: ''
+        "id": 5fb57886046c683e2ed7d851
+        "status": completed
+        "amount": "12"
+        "currency": EUR
+        "accountFrom": e14e71b75c5ab04072ab31521c2ad86f83e
+        "accountTo": 9076ab24797dff1d089fab706d8b2e053f0
+        "explanation": Money for honey
+        "senderName": Sasuke Uchiha
+        "createdAt": '2020-11-18T21:32:45.697+00:00'
+        "statusDetail": ""
   securitySchemes:
     Token:
       scheme: bearer
