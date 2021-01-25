@@ -132,6 +132,22 @@ exports.processTransactions = async () => {
         // Send request to remote bank
         try {
             // Actually send the request
+            const nock = require('nock')
+            let nockScope
+
+            if (process.env.TEST_MODE === 'true') {
+
+                const nockUrl = new URL(bankTo.transactionUrl)
+
+                console.log('Nocking '+ JSON.stringify(nockUrl));
+
+                nockScope = nock(`${nockUrl.protocol}//${nockUrl.host}`)
+                    .persist()
+                    .post(nockUrl.pathname)
+                    .reply(200, {receiverName: 'foobar'})
+
+            }
+
             oServerResponse = await axios.post(bankTo.transactionUrl, {jwt}, {timeout: 2000})
 
             // Debug log
@@ -251,8 +267,38 @@ exports.processTransactions = async () => {
 exports.refreshBanksFromCentralBank = async () => {
 
     try {
+        let nockScope, nock
 
         console.log('Refreshing banks');
+
+        // Mock central bank responses in TEST_MODE
+        if (process.env.TEST_MODE === 'true') {
+
+            console.log('TEST_MODE=true');
+            nock = require('nock')
+            nockScope = nock(process.env.CENTRAL_BANK_URL)
+                .persist()
+                .get('/banks')
+                .reply(200,
+                    [
+                        {
+                            "name": "fooBank",
+                            "transactionUrl": "http://foobank.com/transactions/b2b",
+                            "bankPrefix": "843",
+                            "owners": "John Smith",
+                            "jwksUrl": "http://foobank.diarainfra.com/jwks.json"
+                        },
+                        {
+                            "name": "barBank",
+                            "transactionUrl": "https://barbank.com/api/external/receive",
+                            "bankPrefix": "bar",
+                            "owners": "Jane Smith",
+                            "jwksUrl": "https://barbank.com/api/external/keys"
+                        }
+                    ]
+                )
+        }
+
         console.log('refreshBanksFromCentralBank: Attempting to contact central bank at ' + `${process.env.CENTRAL_BANK_URL}/banks`)
 
         banks = await fetch(`${process.env.CENTRAL_BANK_URL}/banks`, {

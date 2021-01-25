@@ -96,7 +96,7 @@ router.post('/b2b', async (req, res, next) => {
 
     // Extract accountTo
     const accountTo = await accountModel.findOne({number: transaction.accountTo})
-
+    console.log(accountTo)
     // Verify accountTo
     if (!accountTo) {
         return res.status(404).json({error: 'Account not found'})
